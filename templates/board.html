@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}{{ project.name }} — TaskFlow{% endblock %}
+{% block content %}
+<div class="board-page">
+  <header class="page-header">
+    <div>
+      <a href="{{ url_for('views.dashboard') }}" class="back-link">← Projets</a>
+      <h1 style="color: {{ project.color }}">{{ project.name }}</h1>
+      {% if project.description %}<p class="project-desc">{{ project.description }}</p>{% endif %}
+    </div>
+    <button class="btn btn-primary" id="btn-new-task">+ Nouvelle tâche</button>
+  </header>
+
+  <!-- Modal nouvelle tâche -->
+  <div class="modal-overlay hidden" id="modal-task">
+    <div class="modal">
+      <h3 id="modal-task-title">Créer une tâche</h3>
+      <form id="form-task">
+        <input type="hidden" id="task-id" value="" />
+        <div class="form-group">
+          <label>Titre</label>
+          <input type="text" id="task-title" placeholder="Titre de la tâche" required />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea id="task-desc" rows="2" placeholder="Optionnel…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Statut</label>
+            <select id="task-status">
+              <option value="todo">À faire</option>
+              <option value="doing">En cours</option>
+              <option value="done">Terminé</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priorité</label>
+            <select id="task-priority">
+              <option value="low">Faible</option>
+              <option value="medium" selected>Normale</option>
+              <option value="high">Haute</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Date d'échéance</label>
+          <input type="date" id="task-due" />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" id="btn-cancel-task">Annuler</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-task">Créer</button>
+        </div>
+        <p class="form-error hidden" id="task-error"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Kanban board -->
+  <div class="kanban-board">
+    {% for col_status, col_label in [('todo','À faire'), ('doing','En cours'), ('done','Terminé')] %}
+    <div class="kanban-col" data-status="{{ col_status }}">
+      <div class="kanban-col-header">
+        <span class="col-label">{{ col_label }}</span>
+        <span class="col-count" id="count-{{ col_status }}">
+          {{ tasks | selectattr('status', 'equalto', col_status) | list | length }}
+        </span>
+      </div>
+      <div class="kanban-cards" id="col-{{ col_status }}">
+        {% for task in tasks %}
+          {% if task.status == col_status %}
+          <div class="task-card priority-{{ task.priority }}" data-id="{{ task.id }}" data-status="{{ task.status }}">
+            <div class="task-card-header">
+              <span class="priority-badge priority-{{ task.priority }}">{{ task.priority }}</span>
+              <div class="task-actions">
+                <button class="btn-icon btn-edit-task" data-id="{{ task.id }}" title="Éditer">✎</button>
+                <button class="btn-icon btn-delete-task" data-id="{{ task.id }}" title="Supprimer">✕</button>
+              </div>
+            </div>
+            <h4 class="task-title">{{ task.title }}</h4>
+            {% if task.description %}
+              <p class="task-desc">{{ task.description }}</p>
+            {% endif %}
+            {% if task.due_date %}
+              <p class="task-due">📅 {{ task.due_date }}</p>
+            {% endif %}
+            <div class="task-move-buttons">
+              {% if col_status != 'todo' %}
+                <button class="btn-move" data-id="{{ task.id }}"
+                  data-target="{{ 'todo' if col_status == 'doing' else 'doing' }}">← Reculer</button>
+              {% endif %}
+              {% if col_status != 'done' %}
+                <button class="btn-move" data-id="{{ task.id }}"
+                  data-target="{{ 'doing' if col_status == 'todo' else 'done' }}">Avancer →</button>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>const PROJECT_ID = {{ project.id }};</script>
+<script src="{{ url_for('static', filename='js/board.js') }}"></script>
+{% endblock %}
