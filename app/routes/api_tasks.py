@@ -7,7 +7,7 @@ from datetime import date
 from flask import Blueprint, request
 from ..extensions import db
 from ..models import Task, Project
-from ..helpers import api_response, login_required, get_current_user
+from ..helpers import api_response, login_required, get_current_user, json_fields
 
 tasks_bp = Blueprint("tasks", __name__)
 
@@ -27,7 +27,8 @@ def _validate_task(title: str, status: str, priority: str, due_date_str: str | N
         return f"Priorité invalide. Valeurs : {', '.join(Task.PRIORITY_VALUES)}."
     if due_date_str:
         try:
-            date.fromisoformat(due_date_str)
+            if date.fromisoformat(due_date_str).isoformat() != due_date_str:
+                raise ValueError("Date non canonique")
         except ValueError:
             return "Format de date invalide (attendu : YYYY-MM-DD)."
     return None
@@ -41,6 +42,8 @@ def list_tasks(project_id: int):
         return api_response(error="Projet introuvable.", status=404)
 
     status_filter = request.args.get("status")
+    if status_filter and status_filter not in Task.STATUS_VALUES:
+        return api_response(error="Filtre de statut invalide.", status=400)
     query = Task.query.filter_by(project_id=project_id)
     if status_filter and status_filter in Task.STATUS_VALUES:
         query = query.filter_by(status=status_filter)
@@ -51,6 +54,7 @@ def list_tasks(project_id: int):
 
 @tasks_bp.route("/projects/<int:project_id>/tasks", methods=["POST"])
 @login_required
+@json_fields({"title": 200, "description": 10000, "status": 10, "priority": 10, "due_date": 10}, nullable=("due_date",))
 def create_task(project_id: int):
     project = _get_project_for_user(project_id)
     if not project:
@@ -96,6 +100,7 @@ def get_task(project_id: int, task_id: int):
 
 @tasks_bp.route("/projects/<int:project_id>/tasks/<int:task_id>", methods=["PUT"])
 @login_required
+@json_fields({"title": 200, "description": 10000, "status": 10, "priority": 10, "due_date": 10}, nullable=("due_date",))
 def update_task(project_id: int, task_id: int):
     project = _get_project_for_user(project_id)
     if not project:

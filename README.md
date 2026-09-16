@@ -11,7 +11,7 @@ Elle permet de gérer des projets et des tâches en style **Kanban** (Todo / En 
 |--------|-------------|
 | **Back-end** | Python 3.11+, Flask 3.0, Flask-SQLAlchemy |
 | **Base de données** | SQLite (dev) via SQLAlchemy ORM |
-| **Authentification** | Session Flask + hachage pbkdf2:sha256 (Werkzeug) |
+| **Authentification** | Session Flask + hachage via Werkzeug (algorithme par défaut : scrypt) |
 | **API REST** | Blueprints Flask, JSON, status codes HTTP corrects |
 | **Front-end** | HTML5, CSS3, JavaScript ES6+ (`fetch()`) |
 | **Templates** | Jinja2 |
@@ -139,8 +139,8 @@ Format de réponse uniforme : `{ "success": bool, "data": ..., "error": str|null
 
 ## Sécurité
 
-- Mots de passe hachés avec `pbkdf2:sha256` (Werkzeug)
-- `SECRET_KEY` lue depuis l'environnement, jamais hardcodée
+- Mots de passe hachés avec le défaut sécurisé de Werkzeug (`scrypt` pour la version déclarée)
+- `SECRET_KEY` lue depuis l'environnement ; une valeur de développement est présente et doit impérativement être remplacée avant publication
 - Vérification de propriété sur chaque ressource (anti IDOR)
 - Validation des inputs côté serveur avec messages d'erreur clairs
 - Cookies de session `httponly` et `samesite=Lax`
@@ -148,3 +148,11 @@ Format de réponse uniforme : `{ "success": bool, "data": ..., "error": str|null
 ---
 
 *Projet réalisé par Yacine Ouasti — étudiant BBA, dans le cadre d'une démarche d'apprentissage du développement web full-stack.*
+
+## Contrats API et limites
+
+Les créations/modifications exigent un **objet JSON**, des champs textuels typés et des longueurs bornées. Une date d'échéance accepte `YYYY-MM-DD`, `null` ou une chaîne vide ; `null` efface la date lors d'un PUT. Un filtre de statut inconnu retourne 400. Les données d'un autre utilisateur retournent 404. Une session pointant sur un utilisateur absent est invalidée (401 en API / redirection vers connexion en HTML).
+
+Les tests utilisent SQLite en mémoire ; ils vérifient aussi qu'un PUT invalide ne modifie pas la ressource, et qu'un utilisateur ne peut lire, modifier ou supprimer les tâches d'un autre.
+
+Ce dépôt reste un démonstrateur : pas de migrations versionnées, pagination, limite de tentatives de connexion, journal d'audit ou preuve de charge. La protection CSRF dédiée, la rotation des secrets et le cookie Secure/HTTPS restent à intégrer avant une exposition publique. Ne pas présenter la présence de `SameSite=Lax` comme une protection CSRF complète. La base locale existante n'est pas utilisée par les tests.

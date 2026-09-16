@@ -6,7 +6,7 @@ Base URL: /api/projects
 from flask import Blueprint, request
 from ..extensions import db
 from ..models import Project
-from ..helpers import api_response, login_required, get_current_user
+from ..helpers import api_response, login_required, get_current_user, json_fields
 
 projects_bp = Blueprint("projects", __name__)
 
@@ -44,6 +44,7 @@ def get_project(project_id: int):
 
 @projects_bp.route("/projects", methods=["POST"])
 @login_required
+@json_fields({"name": 128, "description": 10000, "color": 7})
 def create_project():
     user = get_current_user()
     body = request.get_json(silent=True) or {}
@@ -64,6 +65,7 @@ def create_project():
 
 @projects_bp.route("/projects/<int:project_id>", methods=["PUT"])
 @login_required
+@json_fields({"name": 128, "description": 10000, "color": 7})
 def update_project(project_id: int):
     user = get_current_user()
     project = Project.query.filter_by(id=project_id, user_id=user.id).first()

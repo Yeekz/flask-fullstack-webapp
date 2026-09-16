@@ -7,9 +7,9 @@ from app import create_app
 from app.extensions import db as _db
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def app():
-    """Create a test Flask app with in-memory DB."""
+    """Create an isolated application and in-memory DB for each test."""
     test_config = {
         "TESTING": True,
         "SECRET_KEY": "test-secret-key",

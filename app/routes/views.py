@@ -9,14 +9,15 @@ views_bp = Blueprint("views", __name__)
 
 
 def _require_login():
-    if "user_id" not in session:
+    if get_current_user() is None:
+        session.clear()
         return redirect(url_for("auth.login"))
     return None
 
 
 @views_bp.route("/")
 def index():
-    if "user_id" in session:
+    if get_current_user() is not None:
         return redirect(url_for("views.dashboard"))
     return render_template("index.html")
 
