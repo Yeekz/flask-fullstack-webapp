@@ -462,3 +462,15 @@ input:focus, textarea:focus, select:focus {
 .back-link:hover { color: var(--clr-primary); text-decoration: none; }
 
 .hidden { display: none !important; }
+
+/* Public demo: short, readable guidance and compact mobile navigation. */
+.nav-form { display: inline; margin: 0; }
+.demo-notice { margin: 1.25rem 0; padding: 1rem; border: 1px solid #6366f1; border-radius: 12px; background: #1c2040; }
+.demo-notice p { margin: .4rem 0 0; line-height: 1.6; }
+@media (max-width: 600px) {
+  .navbar { gap: .75rem; flex-wrap: wrap; }
+  .navbar-links { flex-wrap: wrap; gap: .65rem; }
+  .navbar-user { display: none; }
+  .page-header { gap: .75rem; flex-wrap: wrap; }
+  .demo-notice { font-size: .9rem; }
+}

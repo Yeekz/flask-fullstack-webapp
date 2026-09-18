@@ -14,7 +14,10 @@ def app():
         "TESTING": True,
         "SECRET_KEY": "test-secret-key",
         "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
-        "WTF_CSRF_ENABLED": False,
+        "CSRF_ENABLED": False,
+        "DEMO_MODE": False,
+        "APP_ENV": "development",
+        "PUBLIC_ORIGIN": "",
     }
     application = create_app(config=test_config)
     with application.app_context():

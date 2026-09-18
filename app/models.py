@@ -16,6 +16,7 @@ class User(db.Model):
     created_at = db.Column(db.DateTime, server_default=db.func.now())
 
     projects = db.relationship("Project", backref="owner", lazy=True, cascade="all, delete-orphan")
+    demo_session = db.relationship("DemoSession", uselist=False, cascade="all, delete-orphan")
 
     def to_dict(self) -> dict:
         return {
@@ -27,6 +28,14 @@ class User(db.Model):
 
     def __repr__(self) -> str:
         return f"<User {self.username}>"
+
+
+class DemoSession(db.Model):
+    """Separate table: existing normal-user schemas require no destructive migration."""
+    __tablename__ = "demo_sessions"
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
+    expires_at = db.Column(db.DateTime, nullable=False, index=True)
+    nonce = db.Column(db.String(64), nullable=False)
 
 
 class Project(db.Model):

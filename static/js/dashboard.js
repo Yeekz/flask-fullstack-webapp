@@ -50,7 +50,7 @@
     const name = projName.value.trim();
     if (!name) { showError("Le nom est requis."); return; }
 
-    const res = await fetch("/api/projects", {
+    const res = await window.taskflowFetch("/api/projects", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, description: projDesc.value.trim(), color: selectedColor }),
@@ -90,7 +90,7 @@
     const id = e.currentTarget.dataset.id;
     if (!confirm("Supprimer ce projet et toutes ses tâches ?")) return;
 
-    const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
+    const res = await window.taskflowFetch(`/api/projects/${id}`, { method: "DELETE" });
     const json = await res.json();
     if (!json.success) { alert(json.error || "Erreur lors de la suppression."); return; }
 

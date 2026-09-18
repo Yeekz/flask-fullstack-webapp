@@ -62,7 +62,7 @@ def test_stale_session_returns_401_or_login(client):
 
 def test_other_user_cannot_read_modify_or_delete_tasks(owner):
     client, project, task = owner
-    client.get('/logout')
+    client.post('/logout')
     register_and_login(client, 'qualityintruder')
     url = f'/api/projects/{project}/tasks/{task}'
     assert client.get(url).status_code == 404

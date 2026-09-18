@@ -92,7 +92,7 @@ class TestProjectsAPI:
         proj_id = create_res.get_json()["data"]["id"]
 
         # Switch to another user
-        client.get("/logout")
+        client.post("/logout")
         register_and_login(client, "intruder1", "testpassword123")
         res = client.get(f"/api/projects/{proj_id}")
         assert res.status_code == 404

@@ -79,5 +79,5 @@ class TestLogin:
 
     def test_logout_redirects(self, client):
         register_and_login(client, "logoutuser", "testpassword123")
-        res = client.get("/logout", follow_redirects=False)
+        res = client.post("/logout", follow_redirects=False)
         assert res.status_code in (301, 302)

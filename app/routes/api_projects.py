@@ -3,7 +3,7 @@ REST API — Projects resource.
 All endpoints require authentication.
 Base URL: /api/projects
 """
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from ..extensions import db
 from ..models import Project
 from ..helpers import api_response, login_required, get_current_user, json_fields
@@ -47,6 +47,8 @@ def get_project(project_id: int):
 @json_fields({"name": 128, "description": 10000, "color": 7})
 def create_project():
     user = get_current_user()
+    if current_app.config["DEMO_MODE"] and Project.query.filter_by(user_id=user.id).count() >= current_app.config["DEMO_MAX_PROJECTS"]:
+        return api_response(error="La démo est limitée à 3 projets par invité.", status=409)
     body = request.get_json(silent=True) or {}
 
     name = str(body.get("name", "")).strip()

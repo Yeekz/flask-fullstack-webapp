@@ -2,10 +2,11 @@
 Authentication blueprint — register, login, logout.
 Passwords are hashed with werkzeug.security (pbkdf2:sha256).
 """
-from flask import Blueprint, request, session, redirect, url_for, render_template, flash
+from flask import Blueprint, request, session, redirect, url_for, render_template, flash, current_app, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from ..extensions import db
 from ..models import User
+from ..helpers import get_current_user
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -25,6 +26,8 @@ def _validate_register(username: str, email: str, password: str) -> str | None:
 
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
+    if current_app.config["DEMO_MODE"]:
+        abort(404)
     if request.method == "GET":
         return render_template("register.html")
 
@@ -53,6 +56,7 @@ def register():
     db.session.add(user)
     db.session.commit()
 
+    session.clear()
     session["user_id"] = user.id
     session["username"] = user.username
     flash(f"Bienvenue, {user.username} !", "success")
@@ -61,6 +65,8 @@ def register():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
+    if current_app.config["DEMO_MODE"]:
+        abort(404)
     if request.method == "GET":
         return render_template("login.html")
 
@@ -72,17 +78,23 @@ def login():
         return render_template("login.html"), 400
 
     user = User.query.filter_by(username=username).first()
-    if not user or not check_password_hash(user.password_hash, password):
+    if not user or user.demo_session or not check_password_hash(user.password_hash, password):
         flash("Identifiant ou mot de passe incorrect.", "danger")
         return render_template("login.html"), 401
 
+    session.clear()
     session["user_id"] = user.id
     session["username"] = user.username
     return redirect(url_for("views.dashboard"))
 
 
-@auth_bp.route("/logout")
+@auth_bp.route("/logout", methods=["POST"])
 def logout():
+    if current_app.config["DEMO_MODE"]:
+        user = get_current_user()
+        if user is not None:
+            db.session.delete(user)
+            db.session.commit()
     session.clear()
     flash("Vous avez été déconnecté.", "info")
-    return redirect(url_for("auth.login"))
+    return redirect(url_for("views.index" if current_app.config["DEMO_MODE"] else "auth.login"))

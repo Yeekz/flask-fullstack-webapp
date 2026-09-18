@@ -4,7 +4,7 @@ All endpoints require authentication.
 Base URL: /api/projects/<id>/tasks
 """
 from datetime import date
-from flask import Blueprint, request
+from flask import Blueprint, request, current_app
 from ..extensions import db
 from ..models import Task, Project
 from ..helpers import api_response, login_required, get_current_user, json_fields
@@ -59,6 +59,9 @@ def create_task(project_id: int):
     project = _get_project_for_user(project_id)
     if not project:
         return api_response(error="Projet introuvable.", status=404)
+
+    if current_app.config["DEMO_MODE"] and Task.query.filter_by(project_id=project.id).count() >= current_app.config["DEMO_MAX_TASKS"]:
+        return api_response(error="La démo est limitée à 20 tâches par projet.", status=409)
 
     body = request.get_json(silent=True) or {}
     title = str(body.get("title", "")).strip()

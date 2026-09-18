@@ -8,6 +8,7 @@
 (function () {
   "use strict";
 
+  const PROJECT_ID = document.querySelector(".board-page").dataset.projectId;
   const API = `/api/projects/${PROJECT_ID}/tasks`;
 
   // ---- Modal elements ----
@@ -74,7 +75,7 @@
     const url = id ? `${API}/${id}` : API;
     const method = id ? "PUT" : "POST";
 
-    const res = await fetch(url, {
+    const res = await window.taskflowFetch(url, {
       method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -99,7 +100,7 @@
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
       const target = btn.dataset.target;
-      const res = await fetch(`${API}/${id}`, {
+      const res = await window.taskflowFetch(`${API}/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: target }),
@@ -113,7 +114,7 @@
   function wireEditBtn(btn) {
     btn.addEventListener("click", async () => {
       const id = btn.dataset.id;
-      const res = await fetch(`${API}/${id}`);
+      const res = await window.taskflowFetch(`${API}/${id}`);
       const json = await res.json();
       if (!json.success) { alert(json.error || "Erreur."); return; }
       openModal(json.data);
@@ -124,7 +125,7 @@
     btn.addEventListener("click", async () => {
       if (!confirm("Supprimer cette tâche ?")) return;
       const id = btn.dataset.id;
-      const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+      const res = await window.taskflowFetch(`${API}/${id}`, { method: "DELETE" });
       const json = await res.json();
       if (!json.success) { alert(json.error || "Erreur."); return; }
       const card = document.querySelector(`.task-card[data-id="${id}"]`);

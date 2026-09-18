@@ -1,7 +1,7 @@
 """Shared utility helpers used across route blueprints."""
 from functools import wraps
-from flask import jsonify, session, request
-from .models import User
+from flask import jsonify, session, request, current_app
+from .models import User, DemoSession
 from .extensions import db
 
 
@@ -48,4 +48,14 @@ def get_current_user() -> User | None:
     user_id = session.get("user_id")
     if not user_id:
         return None
-    return db.session.get(User, user_id)
+    user = db.session.get(User, user_id)
+    if not user:
+        return None
+    guest = db.session.get(DemoSession, user_id)
+    if current_app.config["DEMO_MODE"]:
+        from .demo import utcnow
+        if not guest or guest.expires_at <= utcnow() or guest.nonce != session.get("demo_nonce"):
+            return None
+    elif guest:
+        return None
+    return user

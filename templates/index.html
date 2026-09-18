@@ -6,28 +6,39 @@
     <h1>Organisez vos projets, <span class="accent">simplement.</span></h1>
     <p class="hero-sub">
       TaskFlow est un gestionnaire de tâches en style Kanban.
-      Créez des projets, ajoutez des tâches, suivez leur avancement en temps réel.
+      Créez des projets, ajoutez des tâches et faites-les passer de « À faire » à « Terminé ».
     </p>
     <div class="hero-cta">
+      {% if config.DEMO_MODE %}
+      <form method="post" action="{{ url_for('demo.start') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <button type="submit" class="btn btn-primary btn-lg">Essayer la démo</button>
+      </form>
+      {% else %}
       <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Commencer gratuitement</a>
       <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Se connecter</a>
+      {% endif %}
     </div>
+    {% if config.DEMO_MODE %}
+    <p class="hero-sub">Sans compte ni mot de passe. Un exemple fictif vous attend dans votre propre espace temporaire.</p>
+    {% if demo_busy %}<p role="alert" class="flash flash-info">La démo accueille déjà 40 visiteurs. Réessayez plus tard : les espaces expirent après 2 heures.</p>{% endif %}
+    {% endif %}
   </div>
   <div class="hero-features">
     <div class="feature-card">
       <span class="feature-icon">📋</span>
       <h3>Kanban visuel</h3>
-      <p>Glissez vos tâches entre les colonnes Todo, En cours, Terminé.</p>
+      <p>Utilisez les boutons Avancer et Reculer pour déplacer une tâche.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">⚡</span>
-      <h3>Temps réel</h3>
+      <h3>Sans recharger la page</h3>
       <p>Mise à jour instantanée via l'API REST — sans rechargement.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">🔒</span>
-      <h3>Sécurisé</h3>
-      <p>Authentification par session, mots de passe hashés.</p>
+      <h3>{{ 'Espace personnel temporaire' if config.DEMO_MODE else 'Connexion personnelle' }}</h3>
+      <p>{{ 'Chaque visiteur dispose de ses propres projets fictifs.' if config.DEMO_MODE else 'Authentification par session et mots de passe hachés.' }}</p>
     </div>
   </div>
 </section>

@@ -1,7 +1,7 @@
 """
 HTML view blueprint — renders Jinja2 templates for the browser UI.
 """
-from flask import Blueprint, render_template, session, redirect, url_for
+from flask import Blueprint, render_template, session, redirect, url_for, current_app
 from ..models import Project
 from ..helpers import get_current_user
 
@@ -11,7 +11,7 @@ views_bp = Blueprint("views", __name__)
 def _require_login():
     if get_current_user() is None:
         session.clear()
-        return redirect(url_for("auth.login"))
+        return redirect(url_for("views.index" if current_app.config["DEMO_MODE"] else "auth.login"))
     return None
 
 
@@ -19,6 +19,8 @@ def _require_login():
 def index():
     if get_current_user() is not None:
         return redirect(url_for("views.dashboard"))
+    if session.get("user_id"):
+        session.clear()
     return render_template("index.html")
 
 

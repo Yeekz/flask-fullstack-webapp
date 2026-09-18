@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block title %}{{ project.name }} — TaskFlow{% endblock %}
 {% block content %}
-<div class="board-page">
+<div class="board-page" data-project-id="{{ project.id }}">
   <header class="page-header">
     <div>
       <a href="{{ url_for('views.dashboard') }}" class="back-link">← Projets</a>
@@ -105,6 +105,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script>const PROJECT_ID = {{ project.id }};</script>
 <script src="{{ url_for('static', filename='js/board.js') }}"></script>
 {% endblock %}
